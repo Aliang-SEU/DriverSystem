@@ -11,8 +11,8 @@ MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
     RNet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det2.caffemodel");
     ONet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det3.prototxt"), TEST));
     ONet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det3.caffemodel");
-    //ONet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det3-half.prototxt"), TEST));
-    //ONet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det3-half.caffemodel");
+//    ONet_.reset(new Net<float>((proto_model_dir + "/mtcnnCaffe/det3-half.prototxt"), TEST));
+//    ONet_->CopyTrainedLayersFrom(proto_model_dir + "/mtcnnCaffe/det3-half.caffemodel");
 
     Blob<float>* input_layer;
     input_layer = PNet_->input_blobs()[0];
@@ -466,12 +466,16 @@ std::vector<FaceInfo> MtcnnDetector::DetectMaxFace(const cv::Mat& image, const i
     float scale = 12.f / minSize;   //计算尺度来进行图像金字塔操作
     float minWH = std::min(height, width) *scale; // 原图先进行缩放
     std::vector<float> scales;
-    while (minWH >= 12) {
-        //不断迭代 找出所有的缩放尺度 最大尺度为整张图都是人脸 如果预先知道人脸想对于图像的大小 是否可以直接进行计算得到factor的值
-        //固定的factor和minSize 则得到的图像金字塔的尺度应该是一致的 所以这边并非需要每次都进行计算 可以优化
-        scales.push_back(scale);
-        minWH *= factor;
-        scale *= factor;
+    if(scaleGenerateFlag == true) {
+        while (minWH >= 12) {
+            //不断迭代 找出所有的缩放尺度 最大尺度为整张图都是人脸 如果预先知道人脸想对于图像的大小 是否可以直接进行计算得到factor的值
+            //固定的factor和minSize 则得到的图像金字塔的尺度应该是一致的 所以这边并非需要每次都进行计算 可以优化
+            scales.push_back(scale);
+            minWH *= factor;
+            scale *= factor;
+        }
+    }else{
+        scales.push_back(_scale);
     }
 
     sort(scales.begin(), scales.end());
@@ -518,7 +522,7 @@ std::vector<FaceInfo> MtcnnDetector::DetectMaxFace(const cv::Mat& image, const i
         return rnet_res;
     }
     else if (stage == 3){
-
+        autoSet(onet_res, image);       //自适应图像金字塔参数
         return onet_res;
     }
     else{
@@ -579,7 +583,6 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
         return rnet_res;
     }
     else if (stage == 3){
-        autoSet(onet_res, image);       //自适应图像金字塔参数
         return onet_res;
     }
     else{
@@ -593,7 +596,15 @@ void MtcnnDetector::autoSet(std::vector<FaceInfo>& faceInfo, const cv::Mat& imag
         int w = (int) (faceInfo[0].bbox.xmax - faceInfo[0].bbox.xmin + 1);
         int h = (int) (faceInfo[0].bbox.ymax - faceInfo[0].bbox.ymin + 1);
         float scale = 12.f / minSize;   //计算尺度来进行图像金字塔操作
-        float minWH = std::min(w, h) *scale; // 原图先进行缩放
+        float minWH = std::min(w, h) * scale; // 原图先进行缩放
+        while(minWH >= 12.f){
+            minWH *= factor;
+            scale *= factor;
+        }
+        _scale = scale;
+        scaleGenerateFlag = false;
+    }else{
+        scaleGenerateFlag = true;
     }
 }
 

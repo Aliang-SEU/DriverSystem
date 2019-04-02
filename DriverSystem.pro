@@ -32,8 +32,6 @@ if(contains(DEFINES,_qt_msvc_2015)) {
                 /usr/local/cuda/include \
                 /usr/include/boost/ \
                 src
-
-    INCLUDEPATH += /home/hzl/Software/ncnn/build/install/include
 }
 
 if(contains(DEFINES,_qt_msvc_2015)){
@@ -78,14 +76,13 @@ if(contains(DEFINES,_qt_msvc_2015)){
             -lboost_system \
             -lboost_filesystem \
             -lgomp
-    LIBS += /home/hzl/Software/ncnn/build/install/lib/libncnn.a
 }
 
 
 HEADERS += src/MtcnnDetector.h \
     src/CaffeLayerHeadear.h \
     src/EyeRecognition.h \
-    #src/Landmark.h \
+    src/Landmark.h \
     src/MouthRecognition.h \
     #src/CTaskQueue.h \
     #src/Message.h \
@@ -93,7 +90,6 @@ HEADERS += src/MtcnnDetector.h \
     #src/ConcurrentQueue.h \
     src/CaptureSequence.h \
     #src/TimeUtils.h \
-    src/LandMarkWithPose.h \
     #src/MtcnnOpencv.h \
     src/PoseEstimator.h \
     src/KalmanStabilizer.h \
@@ -103,16 +99,17 @@ HEADERS += src/MtcnnDetector.h \
     src/CameraImageProvider.h \
     src/MyDBModel.h \
     src/FatigueAlarm.h \
-    src/CommonVideoRecord.h
+    src/CommonVideoRecord.h \
+    src/LandmarVanilla.h \
+    src/LandmarkWithPose.h
 
 
 SOURCES += src/MtcnnDetector.cpp \
     src/EyeRecognition.cpp \
-    #src/Landmark.cpp \
+    src/Landmark.cpp \
     src/MouthRecognition.cpp \
     src/CaptureSequence.cpp \
     #src/TimeUtils.cpp \
-    src/LandMarkWithPose.cpp \
     #src/MtcnnOpencv.cpp \
     src/PoseEstimator.cpp \
     src/KalmanStabilizer.cpp \
@@ -124,8 +121,9 @@ SOURCES += src/MtcnnDetector.cpp \
     src/CameraImageProvider.cpp \
     src/MyDBModel.cpp \
     src/FatigueAlarm.cpp \
-    src/CommonVideoRecord.cpp
-
+    src/CommonVideoRecord.cpp \
+    src/LandmarVanilla.cpp \
+    src/LandmarkWithPose.cpp
 
 RESOURCES += main.qrc material/icons/icons.qrc
 

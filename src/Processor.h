@@ -1,12 +1,13 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
+#define LANDMARKDETECTOR 1
+
 #include <QObject>
 #include <QImage>
 #include <QThread>
 
 #include <MtcnnDetector.h>
-#include <LandMarkWithPose.h>
 #include <MouthRecognition.h>
 #include <VideoCaptureSource.h>
 #include <CaptureSequence.h>
@@ -18,6 +19,14 @@
 #include <opencv2/core/utility.hpp>
 #include <opencv2/tracking.hpp>
 #include <opencv2/videoio.hpp>
+
+#if LANDMARKDETECTOR==1
+#include <LandmarkWithPose.h>
+#elif LANDMARKDETECTOR==2
+#include <Landmark.h>
+#elif  LANDMARKDETECTOR==3
+#include <LandmarVanilla.h>
+#endif
 
 typedef struct FrameInfo{
     cv::Mat image;  //每一帧的图像
@@ -79,7 +88,13 @@ private:
 private:
     std::shared_ptr<Utilities::CaptureSequence> captureSequence; //视频源
     std::shared_ptr<MtcnnDetector> faceDetector;                //人脸检测器
-    std::shared_ptr<LandmarkWithPose> landmarkWithPose;          //特征点检测器
+#if LANDMARKDETECTOR==1
+    std::shared_ptr<LandmarkWithPose> landmarkWithPose;
+#elif LANDMARKDETECTOR==2
+    std::shared_ptr<Landmark> landmarkWithPose;          //特征点检测器
+#elif  LANDMARKDETECTOR==3
+    std::shared_ptr<LandmarVanilla> landmarkWithPose;          //特征点检测器
+#endif
     std::shared_ptr<PoseEstimator> poseEstimator;                //姿态计算器
     std::vector<std::shared_ptr<KalmanStabilizer>> poseStabilizers;  //卡尔曼滤波器
     std::vector<std::shared_ptr<KalmanStabilizer>> poseEstimatorStabilizers;  //卡尔曼滤波器

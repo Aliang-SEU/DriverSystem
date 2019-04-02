@@ -103,6 +103,8 @@ private:
     const float std_val = 0.0078125f;
     //minibatch size
     const int step_size = 128;
+    bool scaleGenerateFlag = true;
+    float _scale;
 
 };
 

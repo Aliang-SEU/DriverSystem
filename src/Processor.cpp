@@ -11,7 +11,13 @@ Processor::Processor(float fps, QObject *parent)
 
    captureSequence = std::make_shared<Utilities::CaptureSequence>();
    faceDetector = std::make_shared<MtcnnDetector>("../model");
-   landmarkWithPose = std::make_shared<LandmarkWithPose>();
+#if LANDMARKDETECTOR==1
+    landmarkWithPose = std::make_shared<LandmarkWithPose>();
+#elif LANDMARKDETECTOR==2
+    landmarkWithPose = std::make_shared<Landmark>();
+#elif  LANDMARKDETECTOR==3
+    landmarkWithPose = std::make_shared<LandmarVanilla>();
+#endif
    for(int i = 0; i < 3; i++) {
        poseStabilizers.push_back(std::make_shared<KalmanStabilizer>(2, 1, 0.001f, 0.1f));
    }
@@ -234,16 +240,26 @@ bool Processor::detectLandmark(){
         cv::Mat faceRegion(frameInfo.image, frameInfo.facebbox);
         std::vector<cv::Point2f> imagePoints;
         LandmarkAndPose res = landmarkWithPose->getPredict(faceRegion);
-
+#if LANDMARKDETECTOR==1
         for(size_t k = 0; k < res.landmark.size(); k += 2){
-            cv::Point point = cv::Point(static_cast<int>((res.landmark[k] * (frameInfo.facebbox.height / 2) + frameInfo.facebbox.width / 2) + frameInfo.facebbox.x),
-                                        static_cast<int>((res.landmark[k + 1] * (frameInfo.facebbox.height / 2) + frameInfo.facebbox.width / 2) + frameInfo.facebbox.y));
+            cv::Point point = cv::Point(int(res.landmark[k] * (frameInfo.facebbox.height / 2) + frameInfo.facebbox.width / 2) + frameInfo.facebbox.x, int(res.landmark[k + 1] * (frameInfo.facebbox.height / 2) + frameInfo.facebbox.width / 2) + frameInfo.facebbox.y);
             imagePoints.push_back(point);
         }
         for(size_t i = 0; i < 3; i++) {
             poseStabilizers[i]->update(res.pose[i]);
             res.pose[i] = poseStabilizers[i]->getState();
         }
+#elif LANDMARKDETECTOR==2
+        for(size_t k = 0; k < res.landmark.size() ; k +=2 ){
+            cv::Point point = cv::Point(int((res.landmark[k] * frameInfo.facebbox.width) + frameInfo.facebbox.x), int(res.landmark[k + 1] * frameInfo.facebbox.height + frameInfo.facebbox.y));
+            imagePoints.push_back(point);
+        }
+#elif  LANDMARKDETECTOR==3
+        for(size_t k = 0; k < res.landmark.size() ; k +=2 ){
+            cv::Point point = cv::Point(int((res.landmark[k] * frameInfo.facebbox.width) + frameInfo.facebbox.x), int(res.landmark[k + 1] * frameInfo.facebbox.height + frameInfo.facebbox.y));
+            imagePoints.push_back(point);
+        }
+#endif
         frameInfo.landmarkAndPose = res;
         frameInfo.landmarkPoints = imagePoints;
         return true;
@@ -342,12 +358,12 @@ FrameInfo Processor::getFrameInfo(){
 
 void Processor::drawEyeState(){
     if(!frameInfo.leftEyeBBox.empty()){
-        cv::rectangle(frameInfo.processedImage, frameInfo.leftEyeBBox, cv::Scalar(0, 0, 255), 2, 1);
-        cv::putText(frameInfo.processedImage, frameInfo.leftEye == OPEN ? "OPEN" : "CLOSED", frameInfo.leftEyePoint, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255));
+        cv::rectangle(frameInfo.processedImage, frameInfo.leftEyeBBox, cv::Scalar(0, 0, 255), 1, 1);
+        cv::putText(frameInfo.processedImage, frameInfo.leftEye == OPEN ? "OPEN" : "CLOSED", frameInfo.leftEyePoint, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0,0,255));
     }
     if(!frameInfo.rightEyeBBox.empty()){
-        cv::rectangle(frameInfo.processedImage, frameInfo.rightEyeBBox, cv::Scalar(0, 0, 255), 2, 1);
-        cv::putText(frameInfo.processedImage, frameInfo.rightEye == OPEN ? "OPEN" : "CLOSED", frameInfo.rightEyePoint, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,255));
+        cv::rectangle(frameInfo.processedImage, frameInfo.rightEyeBBox, cv::Scalar(0, 0, 255), 1, 1);
+        cv::putText(frameInfo.processedImage, frameInfo.rightEye == OPEN ? "OPEN" : "CLOSED", frameInfo.rightEyePoint, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0,0,255));
     }
 }
 
@@ -375,7 +391,7 @@ void Processor::drawFacePoints() {
 void Processor::drawLandmark() {
     if(!frameInfo.landmarkPoints.empty()){
         for(size_t i = 0; i < frameInfo.landmarkPoints.size(); i++) {
-            cv::circle(frameInfo.processedImage, frameInfo.landmarkPoints[i], 2, cv::Scalar(0, 255, 0), -1, 2, 0);
+            cv::circle(frameInfo.processedImage, frameInfo.landmarkPoints[i], 1, cv::Scalar(0, 255, 0), -1, 2, 0);
         }
     }
 }
@@ -388,7 +404,9 @@ void Processor::drawAnnotationBox(){
 
 void Processor::drawPose(){
     if(!frameInfo.landmarkAndPose.pose.empty()){
+#if LANDMARKDETECTOR==1
         landmarkWithPose->drawPose(frameInfo.processedImage, frameInfo.landmarkAndPose, 80);
+#endif
     }
 }
 
