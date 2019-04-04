@@ -21,7 +21,7 @@ private:
     std::shared_ptr<QEventLoop> loop;
     QNetworkReply *uploadFileReply;
     std::shared_ptr<QNetworkAccessManager> accessManager;
-    const QString serverIP="http://10.193.4.9:8080/";  //10.193.4.55//实验室服务器的ＩＰ地址
+    const QString serverIP="http://10.193.4.55:8080/";  ////实验室服务器的ＩＰ地址
     const QString uploadService="/upload";
     QFile *file;
 
