@@ -55,7 +55,7 @@ std::vector<cv::Mat_<double>> PoseEstimator::solvePoseBy68Points(std::vector<cv:
     std::vector<cv::Mat_<double>> res;
     //cv::Mat inliers;
     //cv::solvePnPRansac(modelPoints68, imagePoints, cameraMatrix, cv::noArray(), rVec, tVec, false);
-    cv::solvePnP(modelPoints68, imagePoints, cameraMatrix, cv::noArray(), rVec, tVec, false, cv::SOLVEPNP_EPNP);
+    cv::solvePnP(modelPoints68, imagePoints, cameraMatrix, cv::noArray(), rVec, tVec, false, cv::SOLVEPNP_DLS);
 
     old_rVec = rVec.clone();
     old_tVec = tVec.clone();

@@ -123,7 +123,7 @@ void CameraCaptureThread::captureFrame() {
   if (!cap.read(frame)) {
     return;
   }
-  cv::resize(frame,frame,cv::Size(640,480));
+  //cv::resize(frame,frame,cv::Size(640,480));
   emit this->imageReady(frame);
 }
 
@@ -143,6 +143,5 @@ QStringList CameraCaptureThread::getCameraList(){
     }
     qDebug() << deviceList;
     return deviceList;
-
 }
 

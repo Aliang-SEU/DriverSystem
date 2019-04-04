@@ -28,21 +28,18 @@ LandmarkAndPose LandmarVanilla::getPredict(cv::Mat& img){
 
     std::vector<Blob<float>*> in_blobs = net->input_blobs();
     float *data = nullptr;
-    if(!img2.isContinuous()){
-        //prepare data into array
-        data = (float*)malloc( img2.rows * img2.cols * sizeof(float));
 
-        int pix_count = 0;
-        for(int i = 0; i < img2.rows; i++) {
-            float* pData=img2.ptr<float>(i);
-            for(int j = 0; j < img2.cols; j++) {
-                data[pix_count++] = pData[j];
-            }
+    //prepare data into array
+    data = (float*)malloc( img2.rows * img2.cols * sizeof(float));
+
+    int pix_count = 0;
+    for(int i = 0; i < img2.rows; i++) {
+        float* pData=img2.ptr<float>(i);
+        for(int j = 0; j < img2.cols; j++) {
+            data[pix_count++] = pData[j];
         }
-        in_blobs[0]->set_cpu_data(data);
-    }else{
-        in_blobs[0]->set_cpu_data((float*)img2.data);
     }
+    in_blobs[0]->set_cpu_data(data);
 
     net->Forward();
     const boost::shared_ptr<Blob<float> > feature_blob = net->blob_by_name("Dense2");//获取该层特征

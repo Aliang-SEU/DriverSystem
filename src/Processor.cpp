@@ -1,7 +1,7 @@
 #include <Processor.h>
 #include <algorithm>
 
-#define DEBUG
+//#define DEBUG
 
 /** 构造函数 加载相应的网络模型参数
  * @brief Processor::Processor
@@ -26,6 +26,15 @@ Processor::Processor(float fps, QObject *parent)
    }
    this->fps = fps;
    this->resetFlag = 0;
+   //视频记录器
+   if(!videoRecord)
+       videoRecord = std::make_shared<SpecialVideoRecord>(this->fps);
+   if(!commonVideoRecord)
+       commonVideoRecord = std::make_shared<CommonVideoRecord>();
+   videoRecordThread = std::make_shared<QThread>();
+   commonVideoRecord->moveToThread(videoRecordThread.get());
+   videoRecordThread->start();
+   QObject::connect(this, SIGNAL(imageRecord(cv::Mat)), commonVideoRecord.get(), SLOT(videoRecord(cv::Mat)));
 }
 
 /** 从文件读取视频
@@ -67,7 +76,7 @@ bool Processor::reset(){
     return true;
 }
 bool Processor::resetAll(){
-    std::cout << "reset success";
+
     poseStabilizers.clear();
     for(int i = 0; i < 3; i++) {
         poseStabilizers.push_back(std::make_shared<KalmanStabilizer>(2, 1, 0.001f, 0.1f));
@@ -106,10 +115,6 @@ bool Processor::processNextFrame(cv::Mat image){
     if(!mouthRecognition) //检测嘴巴检测器是否已经初始化
         mouthRecognition = std::make_shared<MouthRecognition>(this->fps);
 
-    //视频记录器
-    if(!videoRecord)
-        videoRecord = std::make_shared<CommonVideoRecord>(this->fps);
-
     frameInfo = FrameInfo();
     //保存当前帧
     frameInfo.image = image;
@@ -120,7 +125,7 @@ bool Processor::processNextFrame(cv::Mat image){
 //    cv::resize(image, resizedImage, resizedSize);
 
     frameInfo.resizedImage = image;
-
+    emit imageRecord(image);
 #ifdef DEBUG
     double t = (double)cvGetTickCount();
     detectFace();
@@ -420,9 +425,9 @@ cv::Mat Processor::getProcessedImage(){
         //this->drawOriginFace();
         this->drawLandmark();
         //this->drawFacePoints();
-        //this->drawAnnotationBox();
+        this->drawAnnotationBox();
         this->drawEyeState();
-        this->drawPose();
+        //this->drawPose();
     }
     return frameInfo.processedImage;
 }

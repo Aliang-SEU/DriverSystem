@@ -1,4 +1,5 @@
 QT += qml quick sql core multimedia
+QT += network
 CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS
@@ -99,9 +100,11 @@ HEADERS += src/MtcnnDetector.h \
     src/CameraImageProvider.h \
     src/MyDBModel.h \
     src/FatigueAlarm.h \
-    src/CommonVideoRecord.h \
     src/LandmarVanilla.h \
-    src/LandmarkWithPose.h
+    src/LandmarkWithPose.h \
+    src/HttpService.h \
+    src/SpecialVideoRecord.h \
+    src/CommonVideoRecord.h
 
 
 SOURCES += src/MtcnnDetector.cpp \
@@ -121,9 +124,11 @@ SOURCES += src/MtcnnDetector.cpp \
     src/CameraImageProvider.cpp \
     src/MyDBModel.cpp \
     src/FatigueAlarm.cpp \
-    src/CommonVideoRecord.cpp \
     src/LandmarVanilla.cpp \
-    src/LandmarkWithPose.cpp
+    src/LandmarkWithPose.cpp \
+    src/HttpService.cpp \
+    src/SpecialVideoRecord.cpp \
+    src/CommonVideoRecord.cpp
 
 RESOURCES += main.qrc material/icons/icons.qrc
 

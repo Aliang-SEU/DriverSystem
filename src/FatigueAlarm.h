@@ -10,7 +10,10 @@ public:
 
 signals:
     void fatigueAlarm();
+    void progressStart();
 
+public slots:
+    void progressBar(float);
 };
 
 #endif // FATIGUEALARM_H

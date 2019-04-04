@@ -33,7 +33,7 @@ private:
     int flagCount;  //张和度超过alpha的连续帧
     int stage = 0;  //不同的阶段
     float threshAlpha;
-    const float threshAlpha1 = 0.5f;
+    const float threshAlpha1 = 0.45f;
     const float threshAlpha2 = 0.4f;
     int warningCount1;//连续帧警戒值1
     int warningCount2;//连续帧警戒值1

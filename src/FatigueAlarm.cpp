@@ -1,6 +1,8 @@
 #include "FatigueAlarm.h"
+#include <QDebug>
+FatigueAlarm::FatigueAlarm(){
+}
 
-FatigueAlarm::FatigueAlarm()
-{
-
+void FatigueAlarm::progressBar(float percent){
+    emit progressStart();
 }

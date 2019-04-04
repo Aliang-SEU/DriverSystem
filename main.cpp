@@ -55,6 +55,9 @@ int main(int argc, char *argv[]){
     QObject::connect(processor.get(), SIGNAL(mouthFatigue()),
                      fatigueAlarm.get(), SIGNAL(fatigueAlarm()));
 
+    QObject::connect(processor->videoRecord.get(), SIGNAL(progressBar(float)),
+                     fatigueAlarm.get(), SLOT(progressBar(float)));
+
     engine.rootContext()->setContextProperty("cameraCapture", cameraCapture.get());
     engine.rootContext()->setContextProperty("myModel", model.get());
     engine.rootContext()->setContextProperty("processor", processor.get());

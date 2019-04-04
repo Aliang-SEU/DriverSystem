@@ -14,6 +14,7 @@
 #include <PoseEstimator.h>
 #include <KalmanStabilizer.h>
 #include <EyeRecognition.h>
+#include <SpecialVideoRecord.h>
 #include <CommonVideoRecord.h>
 
 #include <opencv2/core/utility.hpp>
@@ -54,7 +55,7 @@ class Processor : public QObject {
 public slots:
     bool processNextFrame(cv::Mat image);
 public:
-    Processor(float fps=30.0, QObject *parent = nullptr);
+    Processor(float fps=25.0, QObject *parent = nullptr);
     bool getNextFrame();
     bool openWebcam(int height=480, int width=640, int deviceId=1);
     bool readVideoCapture(int deviceId);
@@ -100,7 +101,10 @@ private:
     std::vector<std::shared_ptr<KalmanStabilizer>> poseEstimatorStabilizers;  //卡尔曼滤波器
     std::shared_ptr<EyeRecognition> eyeRecognition; //眼睛检测器
     std::shared_ptr<MouthRecognition> mouthRecognition; //MouthDetector
-    std::shared_ptr<CommonVideoRecord> videoRecord;
+
+public:
+    std::shared_ptr<SpecialVideoRecord> videoRecord;
+    std::shared_ptr<CommonVideoRecord> commonVideoRecord;
 
 private:
     FrameInfo frameInfo;
@@ -109,15 +113,14 @@ private:
     float fps;
     int resetFlag;
     bool showProcessFLag = true;
-
+    std::shared_ptr<QThread> videoRecordThread;
 
 signals:
+  void imageRecord(cv::Mat);
   void frame(cv::Mat image);
   void eyeFatigue();
   void mouthFatigue();
   void faceSingnal(FrameInfo frameInfo);
-
-
 };
 
 #endif // PROCESSOR_H

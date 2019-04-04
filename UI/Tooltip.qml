@@ -9,7 +9,7 @@ Rectangle {
     height: textContainer.height + verticalPadding * 2
     color: "#FF4040"
     property int count: 0
-    property int endCount: 5
+    property int endCount: 3
     Text {
         anchors.centerIn: parent
         id:textContainer

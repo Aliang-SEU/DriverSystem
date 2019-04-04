@@ -1,7 +1,5 @@
 #include "MtcnnDetector.h"
 
-#define DEBUG
-
 MtcnnDetector::MtcnnDetector(const string& proto_model_dir) {
 
     Caffe::set_mode(Caffe::GPU);
@@ -540,8 +538,13 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
     const float factor = this->factor;
     const int minSize = this->minSize;
 
+    cv::Mat imageFloat;
+    image.convertTo(imageFloat, CV_32FC1);
+
+    imageFloat = (imageFloat - mean_val) * std_val;
+
     if (stage >= 1){
-        pnet_res = ProposalNet(image, minSize, threshold[0], factor);
+        pnet_res = ProposalNet(imageFloat, minSize, threshold[0], factor);
     }
     if (stage >= 2 && pnet_res.size()>0){
         if (pnet_max_detect_num < (int)pnet_res.size()){
@@ -553,12 +556,12 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
             int start = iter*step_size;
             int end = std::min(start + step_size, num);
             vector<FaceInfo> input(pnet_res.begin() + start, pnet_res.begin() + end);
-            vector<FaceInfo> res = NextStage(image, input, 24, 24, 2, threshold[1]);
+            vector<FaceInfo> res = NextStage(imageFloat, input, 24, 24, 2, threshold[1]);
             rnet_res.insert(rnet_res.end(), res.begin(), res.end());
         }
         rnet_res = NMS(rnet_res, 0.5f, 'u');
         BBoxRegression(rnet_res);
-        BBoxPadSquare(rnet_res, image.cols, image.rows);
+        BBoxPadSquare(rnet_res, imageFloat.cols, imageFloat.rows);
 
     }
     if (stage >= 3 && rnet_res.size()>0){
@@ -568,12 +571,12 @@ vector<FaceInfo> MtcnnDetector::Detect(const cv::Mat& image, const int stage) {
             int start = iter*step_size;
             int end = std::min(start + step_size, num);
             vector<FaceInfo> input(rnet_res.begin() + start, rnet_res.begin() + end);
-            vector<FaceInfo> res = NextStage(image, input, 48, 48, 3, threshold[2]);
+            vector<FaceInfo> res = NextStage(imageFloat, input, 48, 48, 3, threshold[2]);
             onet_res.insert(onet_res.end(), res.begin(), res.end());
         }
         BBoxRegression(onet_res);
         onet_res = NMS(onet_res, 0.5f, 'm');
-        BBoxPad(onet_res, image.cols, image.rows);
+        BBoxPad(onet_res, imageFloat.cols, imageFloat.rows);
 
     }
     if (stage == 1){

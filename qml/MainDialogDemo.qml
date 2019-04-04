@@ -65,6 +65,37 @@ Item {
                 processor.getShowProcessFLag(showProcessFlag.checked)
             }
         }
+
+        ProgressBar{
+             id:fileProgressBar
+             anchors.verticalCenter: parent.verticalCenter
+             minimumValue: 0;
+             maximumValue: 100;
+             value: 0;
+             width: 200;
+             height: 20;
+             Timer{
+                 id:progressBarTimer
+                 interval: 30;
+                 repeat: true;
+                 running: false;
+                 onTriggered: {
+                     if(fileProgressBar.value < 99.1){
+                         fileProgressBar.value += 1;
+                     }else{
+                         stop();
+                         snackbar.open("视频文件上传成功")
+                         fileProgressBar.value = 0;
+                     }
+                 }
+             }
+         }
+    }
+    Connections{
+        target:fatigueAlarm
+        onProgressStart: {
+            progressBarTimer.running=true;
+        }
     }
 
     //摄像头选择对话框

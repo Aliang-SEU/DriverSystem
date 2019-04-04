@@ -46,7 +46,6 @@ CaptureSequence::~CaptureSequence() {
     this->close();
 }
 
-
 const std::string currentDateTime() {
 
     time_t rawTime;
